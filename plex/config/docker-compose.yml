@@ -1,0 +1,56 @@
+version: "2.1"
+name: plex
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VERSION=docker
+      - TZ=Europe/Istanbul
+      - PLEX_CLAIM=TOKEN
+      - ADVERTISE_IP=http://192.168.10.11:32400/
+    volumes:
+      - /opt/plex/data/library:/config
+      - /mnt/hdd/deluge_downloads/tvseries:/tv
+      - /mnt/hdd/deluge_downloads/movies:/movies
+    restart: unless-stopped
+    ports:
+      - 32400:32400
+  deluge:
+    image: lscr.io/linuxserver/deluge:latest
+    container_name: deluge
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Istanbul
+    volumes:
+      - /opt/plex/data/deluge_config:/config
+      - /mnt/hdd/deluge_downloads:/downloads
+    ports:
+      - 8112:8112
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped
+    networks:
+      - torrent
+  flexget:
+    image: ghcr.io/flexget/flexget
+    container_name: flexget
+    command:
+      - daemon
+      - start
+      - --autoreload-config
+    # ports:
+    #   - 5050:5050
+    environment:
+      - TZ=Europe/Istanbul
+    volumes:
+      - /opt/plex/data/flexget_config:/config
+    networks:
+      - torrent
+      
+networks:
+  torrent:
+    name: torrent

@@ -1,0 +1,31 @@
+mqtt:
+  host: mqtt
+
+cameras:
+  antre:
+    ffmpeg:
+      inputs:
+        - path: rtsp://user:pass@192.168.10.60:554/Streaming/Channels/102
+          roles:
+            - detect
+        - path: rtsp://user:pass@192.168.10.60:554/Streaming/Channels/101
+          roles:
+            - record
+            - rtmp
+
+    rtmp:
+      enabled: True
+    #record:
+    #  enabled: True
+    #  retain:
+    #    days: 30
+    #    mode: motion
+    #  events:
+    #    retain:
+    #      default: 30
+    #      mode: active_objects
+    #snapshots:
+    #  enabled: True
+    #detect:
+    #  width: 640
+    #  height: 480
