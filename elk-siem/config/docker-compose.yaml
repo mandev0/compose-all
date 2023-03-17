@@ -1,0 +1,62 @@
+version: "3.9"
+name: elk-siem
+services:
+  elasticsearch:
+    container_name: elasticsearch
+    restart: unless-stopped
+    image: docker.elastic.co/elasticsearch/elasticsearch
+    volumes:
+      - elastic-data:/usr/share/elasticsearch/data
+      - ../data/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    environment:
+      TZ: Europe/Istanbul
+      # Single node setup
+      xpack.security.enabled: true
+      bootstrap.memory_lock: false
+      ELASTIC_PASSWORD: password
+      discovery.type: single-node
+      # Multi node setup
+      # node.name: es-01
+      # cluster.name: es-docker-cluster
+      # cluster.initial_master_nodes: es-01
+      # discovery.seed_hosts: es-01,es-02
+    networks:
+      - siem
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+        
+  kibana:
+    container_name: kibana
+    restart: unless-stopped
+    image: docker.elastic.co/kibana/kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    volumes:
+      - ../data/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    depends_on:
+      - elasticsearch
+    networks:
+      - siem
+      
+  logstash:
+    container_name: logstash
+    restart: unless-stopped
+    image: docker.elastic.co/logstash/logstash
+    ports:
+      - "5044:5044"
+      - "5000:5000"
+    volumes:
+      - ../data/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - logstash-pipeline:/usr/share/logstash/pipeline
+    depends_on:
+      - elasticsearch
+    networks:
+      - siem
+
+networks:
+  siem:
+    name: siem
