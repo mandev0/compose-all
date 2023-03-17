@@ -1,0 +1,18 @@
+version: '3'
+name: rporxy
+services:
+  nginx-internal:
+    image: nginx
+    container_name: nginx-internal
+    restart: unless-stopped
+    ports:
+      - "443:443"
+      - "80:80"
+    environment:
+      - TZ=Europe/Istanbul
+    volumes:
+      - /opt/rproxy/data/www:/var/www:ro
+      - /opt/rproxy/data/conf.d:/etc/nginx/conf.d:ro
+      - /etc/letsencrypt/:/etc/nginx/cert:ro
+      - /opt/rproxy/data/snippets:/etc/nginx/snippets:ro
+      - /opt/rproxy/data/logs:/var/log/nginx
